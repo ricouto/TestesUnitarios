@@ -32,7 +32,7 @@ public class MatchersProprios {
 	
 	public static DataDiferencaDiasMatcher ehHojeMesmo() {
 		return new DataDiferencaDiasMatcher(0);
-	}
+	}//
 	
 
 }
