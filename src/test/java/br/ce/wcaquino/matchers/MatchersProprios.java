@@ -14,7 +14,7 @@ public class MatchersProprios {
 		return new DiaSemanaMatcher(Calendar.MONDAY);
 	}
 	
-	/*
+	/* testes
 	public static DiaSemanaMatcher ehHoje() {
 		Calendar c = Calendar.getInstance();
 		Date data = c.getTime();
