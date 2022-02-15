@@ -3,6 +3,7 @@ package br.ce.wcaquino.servicos;
 import org.junit.Assert;
 import org.junit.Test;
 
+import br.ce.wcaquino.builders.UsuarioBuilder;
 import br.ce.wcaquino.entidades.Usuario;
 
 public class Assertions {
@@ -29,8 +30,8 @@ public class Assertions {
 		Assert.assertTrue("bola".equalsIgnoreCase("Bola"));
 		Assert.assertTrue("bola".startsWith("bo"));
 		
-		Usuario u1 = new Usuario("Usuario 1");
-		Usuario u2 = new Usuario("Usuario 1");
+		Usuario u1 = UsuarioBuilder.umUsuario().agora();
+		Usuario u2 = UsuarioBuilder.umUsuario().agora();
 		Usuario u3 = null;
 		
 		Assert.assertEquals(u1, u2);
