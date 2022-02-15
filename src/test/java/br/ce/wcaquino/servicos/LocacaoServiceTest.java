@@ -18,6 +18,7 @@ import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
 
 import br.ce.wcaquino.builders.FilmeBuilder;
+import br.ce.wcaquino.builders.LocacaoBuilder;
 import br.ce.wcaquino.builders.UsuarioBuilder;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
@@ -25,6 +26,8 @@ import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.exceptions.LocadoraException;
 import br.ce.wcaquino.matchers.MatchersProprios;
 import br.ce.wcaquino.utils.DataUtils;
+import buildermaster.BuilderMaster;
+import sun.applet.Main;
 
 public class LocacaoServiceTest {
 
@@ -54,7 +57,7 @@ public class LocacaoServiceTest {
 		//sai esse trecho >> List<Filme> filme = Arrays.asList(new Filme("Filme 1", 1, 5.0));
 		List<Filme> filme = Arrays.asList(FilmeBuilder.umFilme().comValor(5.0).agora());
 
-		Locacao locacao = service.alugarFilme(usuario, filme);
+		Locacao locacao = LocacaoBuilder.umLocacao().comValor(5.0).agora();//service.alugarFilme(usuario, filme);
 
 		/*
 		Assert.assertEquals(5.0, locacao.getValor(), 0.01);
@@ -179,5 +182,10 @@ public class LocacaoServiceTest {
 		assertThat(retorno.getDataRetorno(), MatchersProprios.caiEm(Calendar.MONDAY));
 		assertThat(retorno.getDataRetorno(), MatchersProprios.caiNumaSegunda());
 	}
+	
+	/*
+	public static void main(String[] args) {
+		new BuilderMaster().gerarCodigoClasse(Locacao.class);
+	}*/
 
 }
