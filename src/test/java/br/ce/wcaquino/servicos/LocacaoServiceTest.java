@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import br.ce.wcaquino.builders.FilmeBuilder;
 import br.ce.wcaquino.builders.LocacaoBuilder;
@@ -34,6 +35,8 @@ import sun.applet.Main;
 public class LocacaoServiceTest {
 
 	private LocacaoService service;
+	private SPCService spc;
+	private LocacaoDAO dao;
 
 	@Rule
 	public ErrorCollector error = new ErrorCollector();
@@ -45,8 +48,10 @@ public class LocacaoServiceTest {
 	@Before
 	public void setup() {
 		service = new LocacaoService();
-		LocacaoDAO dao = new LocacaoDaoFake();
+		dao = Mockito.mock(LocacaoDAO.class);
 		service.setLocacaoDAO(dao);
+		spc = Mockito.mock(SPCService.class);
+		service.setSPCService(spc);
 	}
 
 	@Test
@@ -191,5 +196,22 @@ public class LocacaoServiceTest {
 	public static void main(String[] args) {
 		new BuilderMaster().gerarCodigoClasse(Locacao.class);
 	}*/
+	
+	@Test
+	public void naoDeveAlugarFilmeParaNegativadoSPC() throws LocadoraException, Exception {
+		//cenario
+		Usuario usuario = UsuarioBuilder.umUsuario().agora();
+		Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario 2").agora();
+		List<Filme> filmes = Arrays.asList(FilmeBuilder.umFilme().agora());
+		
+		Mockito.when(spc.possuiNegativacao(usuario)).thenReturn(true);
+		
+		expected.expect(LocadoraException.class);
+		expected.expectMessage("Usuário Negativado!");
+		
+		//acao
+		service.alugarFilme(usuario2, filmes);
+		
+	}
 
 }
