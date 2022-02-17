@@ -1,0 +1,23 @@
+//cenario
+Usuario usuario = UsuarioBuilder.umUsuario().agora();
+Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario 2").agora();
+List<Filme> filmes = Arrays.asList(FilmeBuilder.umFilme().agora());
+
+Mockito.when(spc.possuiNegativacao(usuario)).thenReturn(true);
+
+//expected.expect(LocadoraException.class);
+//expected.expectMessage("Usuário Negativado!");
+
+//acao
+try {
+	service.alugarFilme(usuario, filmes);
+//verificacao
+	Assert.fail();
+} catch (LocadoraException e) {
+	Assert.assertThat(e.getMessage(), CoreMatchers.is("Usuário Negativado!"));
+}
+
+//service.alugarFilme(usuario, filmes);
+
+	Mockito.verify(spc.possuiNegativacao(usuario));
+}

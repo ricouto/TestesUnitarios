@@ -22,21 +22,19 @@ import br.ce.wcaquino.builders.FilmeBuilder;
 import br.ce.wcaquino.builders.LocacaoBuilder;
 import br.ce.wcaquino.builders.UsuarioBuilder;
 import br.ce.wcaquino.daos.LocacaoDAO;
-import br.ce.wcaquino.daos.LocacaoDaoFake;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.exceptions.LocadoraException;
 import br.ce.wcaquino.matchers.MatchersProprios;
 import br.ce.wcaquino.utils.DataUtils;
-import buildermaster.BuilderMaster;
-import sun.applet.Main;
 
 public class LocacaoServiceTest {
 
 	private LocacaoService service;
 	private SPCService spc;
 	private LocacaoDAO dao;
+	private EmailService email;
 
 	@Rule
 	public ErrorCollector error = new ErrorCollector();
@@ -52,6 +50,8 @@ public class LocacaoServiceTest {
 		service.setLocacaoDAO(dao);
 		spc = Mockito.mock(SPCService.class);
 		service.setSPCService(spc);
+		email = Mockito.mock(EmailService.class);
+		service.setEmailService(email);
 	}
 
 	@Test
@@ -64,9 +64,9 @@ public class LocacaoServiceTest {
 		
 		// Filme filme = new Filme("Filme 1", 2, 5.0);
 		//sai esse trecho >> List<Filme> filme = Arrays.asList(new Filme("Filme 1", 1, 5.0));
-		List<Filme> filme = Arrays.asList(FilmeBuilder.umFilme().comValor(5.0).agora());
+		//List<Filme> filme = Arrays.asList(FilmeBuilder.umFilme().comValor(5.0).agora());
 
-		Locacao locacao = LocacaoBuilder.umLocacao().comValor(5.0).agora();//service.alugarFilme(usuario, filme);
+		Locacao locacao = LocacaoBuilder.umLocacao().comUsuario(usuario).comValor(5.0).agora();//service.alugarFilme(usuario, filme);
 
 		/*
 		Assert.assertEquals(5.0, locacao.getValor(), 0.01);
@@ -197,21 +197,46 @@ public class LocacaoServiceTest {
 		new BuilderMaster().gerarCodigoClasse(Locacao.class);
 	}*/
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void naoDeveAlugarFilmeParaNegativadoSPC() throws LocadoraException, Exception {
+		
 		//cenario
 		Usuario usuario = UsuarioBuilder.umUsuario().agora();
-		Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario 2").agora();
 		List<Filme> filmes = Arrays.asList(FilmeBuilder.umFilme().agora());
 		
 		Mockito.when(spc.possuiNegativacao(usuario)).thenReturn(true);
 		
-		expected.expect(LocadoraException.class);
-		expected.expectMessage("Usuário Negativado!");
+		//acao
+		try {
+			service.alugarFilme(usuario, filmes);
+		//verificacao
+			Assert.fail();
+		} catch (LocadoraException e) {
+			Assert.assertThat(e.getMessage(), CoreMatchers.is("Usuário Negativado!"));
+		}
+		
+		Mockito.verify(spc.possuiNegativacao(usuario));
+	}
+	
+	@Test
+	public void deveEnviarEmailParaLocacoesAtrasadas() {
+		//cenario
+		Usuario usuario = UsuarioBuilder.umUsuario().agora();
+		//Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario 2").agora();
+		
+		List<Locacao> locacoes = Arrays.asList(LocacaoBuilder.umLocacao()
+				.comUsuario(usuario)
+				.comDataRetorno(DataUtils.obterDataComDiferencaDias(-2))
+				.agora());
+
+		Mockito.when(dao.obterLocacoesPendentes()).thenReturn(locacoes);
 		
 		//acao
-		service.alugarFilme(usuario2, filmes);
+		service.notificarAtrasos();
 		
+		//verificacao
+		Mockito.verify(email).notificarAtrasos(usuario);
 	}
 
 }
