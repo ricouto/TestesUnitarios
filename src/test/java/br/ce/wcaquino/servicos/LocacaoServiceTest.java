@@ -197,8 +197,9 @@ public class LocacaoServiceTest {
 		new BuilderMaster().gerarCodigoClasse(Locacao.class);
 	}*/
 	
-	@SuppressWarnings("deprecation")
-	@Test
+	@Ignore
+	//@SuppressWarnings("deprecation")
+	//@Test
 	public void naoDeveAlugarFilmeParaNegativadoSPC() throws LocadoraException, Exception {
 		
 		//cenario
@@ -223,12 +224,14 @@ public class LocacaoServiceTest {
 	public void deveEnviarEmailParaLocacoesAtrasadas() {
 		//cenario
 		Usuario usuario = UsuarioBuilder.umUsuario().agora();
-		//Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario 2").agora();
+		Usuario usuario2 = UsuarioBuilder.umUsuario().comNome("Usuario em dia").agora();
+		Usuario usuario3 = UsuarioBuilder.umUsuario().comNome("Outro atrasado!").agora();
 		
-		List<Locacao> locacoes = Arrays.asList(LocacaoBuilder.umLocacao()
-				.comUsuario(usuario)
-				.comDataRetorno(DataUtils.obterDataComDiferencaDias(-2))
-				.agora());
+		List<Locacao> locacoes = Arrays.asList(
+				LocacaoBuilder.umLocacao().atrasado().comUsuario(usuario).agora(),
+				LocacaoBuilder.umLocacao().comUsuario(usuario2).agora(),
+				LocacaoBuilder.umLocacao().atrasado().comUsuario(usuario3).agora(),
+				LocacaoBuilder.umLocacao().atrasado().comUsuario(usuario3).agora());
 
 		Mockito.when(dao.obterLocacoesPendentes()).thenReturn(locacoes);
 		
@@ -236,7 +239,14 @@ public class LocacaoServiceTest {
 		service.notificarAtrasos();
 		
 		//verificacao
+		Mockito.verify(email, Mockito.times(3)).notificarAtrasos(Mockito.any(Usuario.class));
 		Mockito.verify(email).notificarAtrasos(usuario);
+		Mockito.verify(email, Mockito.atLeastOnce()).notificarAtrasos(usuario3);
+		Mockito.verify(email, Mockito.never()).notificarAtrasos(usuario2);
+		Mockito.verifyNoMoreInteractions(email);
 	}
+	
+	//Antes do refactory
+	//LocacaoBuilder.umLocacao().comUsuario(usuario).comDataRetorno(DataUtils.obterDataComDiferencaDias(-2)).agora(),
 
 }
