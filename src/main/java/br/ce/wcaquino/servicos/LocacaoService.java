@@ -19,7 +19,9 @@ public class LocacaoService {
 	public SPCService spcService;
 	public EmailService emailService;
 	
-	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes) throws Exception, LocadoraException {
+	public Locacao alugarFilme(Usuario usuario, List<Filme> filmes) throws Exception {
+		
+		boolean negativado;
 		
 		if(usuario == null) {
 			throw new LocadoraException ("Usuario vazio!");
@@ -35,7 +37,13 @@ public class LocacaoService {
 			}
 		}
 		
-		if(spcService.possuiNegativacao(usuario)) {
+		try {
+			negativado = spcService.possuiNegativacao(usuario);
+		} catch (Exception e) {
+			throw new LocadoraException("Problemas com SPC, tente novamente!");
+		}
+
+		if (negativado) {
 			throw new LocadoraException("Usuário Negativado!");
 		}
 		
@@ -76,7 +84,8 @@ public class LocacaoService {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
+	
+	/* Podem ser removidas pois o Mock faz este papel
 	public void setLocacaoDAO (LocacaoDAO dao) {
 		this.dao = dao;
 	}
@@ -88,5 +97,6 @@ public class LocacaoService {
 	public void setEmailService(EmailService email) {
 		emailService = email;
 	}
+	*/
 	
 }

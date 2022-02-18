@@ -16,7 +16,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import br.ce.wcaquino.builders.FilmeBuilder;
 import br.ce.wcaquino.builders.LocacaoBuilder;
@@ -31,9 +34,13 @@ import br.ce.wcaquino.utils.DataUtils;
 
 public class LocacaoServiceTest {
 
+	@InjectMocks
 	private LocacaoService service;
+	@Mock
 	private SPCService spc;
+	@Mock
 	private LocacaoDAO dao;
+	@Mock
 	private EmailService email;
 
 	@Rule
@@ -45,6 +52,8 @@ public class LocacaoServiceTest {
 
 	@Before
 	public void setup() {
+		MockitoAnnotations.initMocks(this);
+		/* Podem ser removidas pois o Annotion faz este papel
 		service = new LocacaoService();
 		dao = Mockito.mock(LocacaoDAO.class);
 		service.setLocacaoDAO(dao);
@@ -52,6 +61,7 @@ public class LocacaoServiceTest {
 		service.setSPCService(spc);
 		email = Mockito.mock(EmailService.class);
 		service.setEmailService(email);
+		*/
 	}
 
 	@Test
@@ -197,10 +207,8 @@ public class LocacaoServiceTest {
 		new BuilderMaster().gerarCodigoClasse(Locacao.class);
 	}*/
 	
-	@Ignore
-	//@SuppressWarnings("deprecation")
-	//@Test
-	public void naoDeveAlugarFilmeParaNegativadoSPC() throws LocadoraException, Exception {
+	@Test
+	public void naoDeveAlugarFilmeParaNegativadoSPC() throws Exception {
 		
 		//cenario
 		Usuario usuario = UsuarioBuilder.umUsuario().agora();
@@ -214,10 +222,11 @@ public class LocacaoServiceTest {
 		//verificacao
 			Assert.fail();
 		} catch (LocadoraException e) {
-			Assert.assertThat(e.getMessage(), CoreMatchers.is("Usuário Negativado!"));
+			Assert.assertEquals(e.getMessage(),"Usuário Negativado!");
 		}
 		
-		Mockito.verify(spc.possuiNegativacao(usuario));
+		//Mockito.verify(spc.possuiNegativacao(usuario));
+		Mockito.verify(spc, Mockito.atLeastOnce()).possuiNegativacao(usuario);
 	}
 	
 	@Test
@@ -244,9 +253,28 @@ public class LocacaoServiceTest {
 		Mockito.verify(email, Mockito.atLeastOnce()).notificarAtrasos(usuario3);
 		Mockito.verify(email, Mockito.never()).notificarAtrasos(usuario2);
 		Mockito.verifyNoMoreInteractions(email);
+		//Antes do refactory
+		//LocacaoBuilder.umLocacao().comUsuario(usuario).comDataRetorno(DataUtils.obterDataComDiferencaDias(-2)).agora(),
 	}
 	
-	//Antes do refactory
-	//LocacaoBuilder.umLocacao().comUsuario(usuario).comDataRetorno(DataUtils.obterDataComDiferencaDias(-2)).agora(),
+	@Test
+	public void deveTratarErroNoSPC() throws Exception {
+		//cenario
+		Usuario usuario = UsuarioBuilder.umUsuario().agora();
+		List<Filme> filmes = Arrays.asList(FilmeBuilder.umFilme().agora());
+		
+		Mockito.when(spc.possuiNegativacao(usuario)).thenThrow(new Exception("Falha Catastrófica!"));
+		
+		//verificacao
+		expected.expect(LocadoraException.class);
+		expected.expectMessage("Problemas com SPC, tente novamente!");
+		
+		
+		//acao
+		service.alugarFilme(usuario, filmes);
+		
+		
+	}
+	
 
 }
