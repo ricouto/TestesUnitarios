@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +57,7 @@ public class LocacaoServiceTest_PowerMock {
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
 		service = PowerMockito.spy(service);
+		CalculadoraTest.ordem.append("4");
 		/* Podem ser removidas pois o Annotion faz este papel
 		service = new LocacaoService();
 		dao = Mockito.mock(LocacaoDAO.class);
@@ -65,6 +67,11 @@ public class LocacaoServiceTest_PowerMock {
 		email = Mockito.mock(EmailService.class);
 		service.setEmailService(email);
 		*/
+	}
+	
+	@AfterClass
+	public static void tearDownClass(){
+		System.out.println(CalculadoraTest.ordem.toString());
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package br.ce.wcaquino.servicos;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,12 @@ public class CalculadoraMockTest {
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
+		CalculadoraTest.ordem.append("5");
+	}
+	
+	@AfterClass
+	public static void tearDownClass(){
+		System.out.println(CalculadoraTest.ordem.toString());
 	}
 	
 	@Test
